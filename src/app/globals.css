@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+
+html, body { height: 100%; }
+body {
+  background: #000;
+  color: #ff8c00;
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,140,0,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,140,0,.045) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse at 50% 0%, #000 10%, transparent 78%);
+}
+::selection { background: #ff8c00; color: #000; }
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: #0a0600; }
+::-webkit-scrollbar-thumb { background: #3a1f00; border: 1px solid #8a4a00; }
+
+@layer components {
+  .panel {
+    @apply relative border border-amber-dim bg-panel shadow-glow;
+  }
+  .panel::before, .panel::after {
+    content: ''; position: absolute; width: 9px; height: 9px;
+    border: 1px solid #ff8c00; pointer-events: none;
+  }
+  .panel::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+  .panel::after { bottom: -1px; right: -1px; border-left: 0; border-top: 0; }
+  .panel-head {
+    @apply flex items-center justify-between gap-3 border-b border-amber-dim px-3 py-2 text-[10px] uppercase tracking-[0.24em] text-amber-bright;
+    background: linear-gradient(90deg, rgba(255,140,0,.12), rgba(255,140,0,.01));
+  }
+  .field {
+    @apply w-full border border-amber-dim bg-black px-3 py-2 text-amber-bright outline-none placeholder:text-amber-dim focus:border-amber;
+  }
+  .label { @apply mb-1 mt-3 block text-[10px] uppercase tracking-[0.2em] text-amber-dim; }
+  .chip { @apply inline-flex items-center border border-amber-dim px-2 py-0.5 text-[10px] uppercase tracking-widest; }
+}
