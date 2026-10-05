@@ -151,7 +151,7 @@ Prerequisites: Node 20.9+, and free accounts on Supabase, Upstash, and
 Cloudflare.
 
 ```bash
-git clone <your-repo>
+git clone https://github.com/saksham30-oss/osint-lens.git
 cd osint-lens
 npm install
 cp .env.example .env.local
