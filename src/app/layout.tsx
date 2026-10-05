@@ -16,7 +16,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`dark ${mono.variable}`}>
       <body className="min-h-screen font-mono">
         <div className="relative z-10">{children}</div>
+        <div className="pointer-events-none fixed bottom-2 right-3 z-50 select-none text-[10px] tracking-widest text-amber-600/40 font-mono">
+          made by saksham paudel
+        </div>
       </body>
     </html>
   );
-}
+} 
