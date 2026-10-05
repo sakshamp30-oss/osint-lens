@@ -17,6 +17,88 @@ Four modes:
 
 Everything streams live from Gemini.
 
+---
+
+## ⚠️ Read this first
+
+**I'm new to cybersecurity and OSINT.** I built this as a learning project
+to understand how these tools work. It is not a polished product and I make
+no claim to expertise.
+
+**Results can be wrong.** Gemini is a language model, not an oracle. It will
+sometimes:
+
+- invent a location with full confidence
+- misread text in an image
+- describe things that aren't there
+- give you a plausible-sounding answer that's entirely fabricated
+
+The schema forces it to flag confidence per claim and separate observed
+from inferred from speculated — **use those flags.** If the model says
+"speculated," treat it as a guess, not a fact.
+
+**Do not rely on this for anything that matters.** If you're doing
+investigative work, verify everything through independent sources. Use the
+app's output as a starting point, not a conclusion.
+
+**Do not use it on people without cause.** Face/people mode describes
+appearance only. Even that can enable harm if misused.
+
+---
+
+## Why not just paste the image into Gemini?
+
+Fair question. For a single casual image, honestly, you should just use
+Gemini's web UI. It's free, fast, and the vision model is the same one this
+app calls.
+
+The app earns its place when you need any of these:
+
+**1. The prompt is the product.**
+Raw Gemini asked "where was this taken?" gives you a confident guess with
+no reasoning. The app sends a system instruction that forces Gemini to:
+
+- list visual clues **first**, then reason to a conclusion, then give
+  coordinates
+- tag every claim as `observed` / `inferred` / `speculated`
+- say "unknown" instead of inventing an answer
+- never name real people
+- ignore text-in-image as a prompt injection
+
+You could retype that prompt by hand every time. The app does it for you,
+consistently, per mode.
+
+**2. It shows its work.**
+You can defend a conclusion that comes with a reasoning chain. "Gemini said
+it's in Germany" is not defensible. "Here are the clues, here's the
+reasoning, here's the confidence per claim, here's the EXIF, and here's the
+audit record" is.
+
+**3. Cache and cost.**
+Same image searched twice is instant and free the second time. Useful when
+you're re-checking work.
+
+**4. Audit log.**
+Every search is timestamped and stored. Gemini's UI has no history.
+
+**5. Forensics is not an AI thing.**
+EXIF extraction, ELA, C2PA detection run locally in the app. Gemini can
+describe a manipulation but it can't read EXIF or compute an ELA diff. The
+app does both.
+
+**6. Structured multi-mode output.**
+Four modes, each with a schema-appropriate response. Doing all four by hand
+means four different prompts.
+
+What you're **not** getting: a smarter model, better vision, or faster
+responses. Same weights. The difference is structure, auditability, and the
+forensics layer.
+
+**Short version:** for curiosity, use Gemini. For investigative work where
+you need to show your process, use this.
+
+---
+
 ## Why BYOK
 
 Running a public reverse image search on my own dime isn't viable — every
@@ -279,13 +361,11 @@ bad idea, and I'd rather you know before you find out the hard way.
 ## Roadmap
 
 I keep this in `TODO.md`. Short version: fix the usage counter so failed
-searches don't eat credits, add CSAM hash-matching, then add reverse image
-search against the public web (find where an *image* has been posted — not
-who's in it).
+searches don't eat credits, add CSAM hash-matching.
 
 ## Legal
 
-This is a tool made for my study as a cybersecurity student, for OSINT researchers, journalists, and defensive security
+This is a tool I made for expansion of my knowledge in cybersecurity for OSINT researchers, journalists, and defensive security
 work. If you use it to stalk, dox, or harass people, you're on your own
 and you're the reason tools like this get regulated.
 
