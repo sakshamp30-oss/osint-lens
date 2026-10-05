@@ -4,8 +4,6 @@ Bring-your-own-key visual intelligence: reverse image analysis, geolocation, peo
 
 Stack: Next.js 14 (App Router, strict TypeScript) · Supabase (auth + Postgres + transient storage) · Upstash Redis (cache + rate limits) · Cloudflare Turnstile · Gemini REST (`streamGenerateContent`) · Tailwind + shadcn/ui-style components.
 
-> **Status: written but not executed.** The code was authored without network access, so `npm install`, `tsc` and a deploy have not been run. Expect to fix a few small type or version issues on first `npm run typecheck`. The pure logic (AES-GCM binding, streaming-JSON repair) was unit-tested; see "Known limits" for items that need your attention before going public.
-
 ## Request flow
 
 ```
