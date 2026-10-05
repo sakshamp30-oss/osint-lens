@@ -23,3 +23,7 @@ The interesting attack surface:
 - Rate limiting (`src/lib/ratelimit.ts`)
 - Gemini key decryption path (`src/app/api/search/route.ts`)
 - Prompt injection via image text (`src/lib/gemini/prompts.ts`)
+
+I'm new to security, so this list is my best guess at where the sharp
+edges are, not a complete audit. If you find something in one of these
+files, or somewhere I didn't list, I'd genuinely like to know.
