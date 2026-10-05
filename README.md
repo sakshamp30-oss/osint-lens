@@ -95,7 +95,7 @@ responses. Same weights. The difference is structure, auditability, and the
 forensics layer.
 
 **Short version:** for curiosity, use Gemini. For investigative work where
-you need to show your process, use this.
+you need to show your process, use this and this was made for my study work and not entirely workable in real world project.
 
 ---
 
@@ -333,8 +333,7 @@ bad idea, and I'd rather you know before you find out the hard way.
 4. **No CSAM hash-matching.** The NSFW classifier does not reliably detect
    CSAM. If you're going to deploy this publicly, add hash-matching
    (Cloudflare's CSAM Scanning Tool, PhotoDNA, or similar) and understand
-   your reporting obligations first. This is why the repo is private right
-   now.
+   your reporting obligations first. This is a real gap. If you're going to deploy this publicly, add hash-matching (Cloudflare's CSAM Scanning Tool, PhotoDNA, or similar) and understand your reporting obligations first.
 
 5. **pHash collisions.** Perceptually similar images share a cache entry
    (that's the point). Forensics results are keyed additionally on the
