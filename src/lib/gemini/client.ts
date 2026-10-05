@@ -79,8 +79,10 @@ interface GeminiEvent {
 const OK_FINISH = new Set(['STOP', 'FINISH_REASON_UNSPECIFIED']);
 
 /** Yields text deltas from streamGenerateContent (SSE). Throws AppError on any failure. */
-export async function* streamGemini(args: StreamArgs): AsyncGenerator<string, void, void> {
-  const generationConfig: Record<string, unknown> = {
+async function* streamGeminiOnce(
+  args: StreamArgs & { model: string },
+): AsyncGenerator<string, void, void> {
+    const generationConfig: Record<string, unknown> = {
     temperature: args.temperature,
     responseMimeType: 'application/json',
     responseSchema: args.schema,
@@ -99,7 +101,7 @@ export async function* streamGemini(args: StreamArgs): AsyncGenerator<string, vo
 
   let res: Response;
   try {
-    res = await fetch(`${BASE}/models/${encodeURIComponent(env.geminiModel)}:streamGenerateContent?alt=sse`, {
+    res = await fetch(`${BASE}/models/${encodeURIComponent(args.model)}:streamGenerateContent?alt=sse`, {
       method: 'POST',
       // The key travels in a header, never in the URL, so it cannot leak into access logs.
       headers: { 'content-type': 'application/json', 'x-goog-api-key': args.apiKey },
@@ -110,7 +112,14 @@ export async function* streamGemini(args: StreamArgs): AsyncGenerator<string, vo
     if (e instanceof Error && e.name === 'AbortError') throw e;
     throw new AppError('upstream_error', 'Could not reach the Gemini API. Try again.');
   }
-  if (!res.ok) throw mapHttpError(res.status, await res.text());
+  if (!res.ok) {
+  const text = await res.text();
+  const err = mapHttpError(res.status, text);
+  if (RETRYABLE_STATUSES.has(res.status)) {
+    throw new RetryableUpstreamError(res.status, err.message);
+  }
+  throw err;
+}
   if (!res.body) throw new AppError('upstream_error', 'Gemini returned an empty response.');
 
   const handleLine = (line: string): string => {
@@ -166,4 +175,58 @@ export async function* streamGemini(args: StreamArgs): AsyncGenerator<string, vo
   } finally {
     reader.cancel().catch(() => undefined);
   }
+}
+
+const RETRYABLE_STATUSES = new Set([404, 408, 425, 429, 500, 502, 503, 504]);
+
+class RetryableUpstreamError extends Error {
+  constructor(public status: number, message: string) {
+    super(message);
+    this.name = 'RetryableUpstreamError';
+  }
+}
+
+function getModelChain(): string[] {
+  const primary = process.env.GEMINI_MODEL ?? 'gemini-3.8-flash';
+  const fallbacks = (process.env.GEMINI_MODEL_FALLBACKS ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return Array.from(new Set([primary, ...fallbacks]));
+}
+
+export async function* streamGemini(
+  args: StreamArgs,
+): AsyncGenerator<string, void, void> {
+  const models = getModelChain();
+  let lastError: unknown = null;
+
+  for (let i = 0; i < models.length; i++) {
+    const model = models[i];
+    let yielded = false;
+
+    try {
+      for await (const chunk of streamGeminiOnce({ ...args, model })) {
+        yielded = true;
+        yield chunk;
+      }
+      return;
+    } catch (err) {
+      if (yielded) throw err;
+
+      const isLast = i === models.length - 1;
+
+      if (err instanceof RetryableUpstreamError && !isLast) {
+        console.warn(
+          `[gemini] ${model} → HTTP ${err.status}; falling back to ${models[i + 1]}`,
+        );
+        lastError = err;
+        continue;
+      }
+
+      throw err;
+    }
+  }
+
+  throw lastError ?? new Error('All Gemini models failed.');
 }

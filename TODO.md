@@ -9,8 +9,7 @@ Known issues, planned work, and future features for OSINT//LENS.
 ## 🔴 Blockers — must fix before any public deployment
 
 ### CSAM hash-matching
-The NSFW classifier cannot reliably detect CSAM. Deploying a public tool
-without hash-matching is a legal liability.
+The NSFW classifier cannot reliably detect CSAM. Deploying a public tool without hash-matching is a legal liability.
 
 - [ ] Integrate Cloudflare CSAM Scanning Tool, PhotoDNA, or equivalent
 - [ ] Define reporting obligations for your jurisdiction
@@ -153,3 +152,6 @@ For OSINT researchers processing sets of images.
 - [x] Audit log
 - [x] Fix `AQ.` key regex in `/api/key`
 - [x] Model fallback UI error surfacing
+- [x] Fix NSFW moderation: pass `RawImage` instead of `Blob` to the classifier
+- [x] Make model fallback retry on 404 (retired models)
+- [x] Restore `MODERATION_FAIL_OPEN=false` — moderation is fail-closed

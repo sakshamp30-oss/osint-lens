@@ -236,8 +236,7 @@ you've hit quota, check your usage in Google AI Studio.
 
 ## Accuracy — what I did to try to keep the output trustworthy
 
-This is the part I spent the most time on, because a confidently wrong
-answer is worse than no answer in OSINT work.
+This is the part I spent the most time on, because a confidently wrong answer is worse than no answer in OSINT work.
 
 - **Original bytes go to Gemini.** No downscaling, no re-encoding. If you
   want, set `GEMINI_MEDIA_RESOLUTION=MEDIA_RESOLUTION_HIGH` for more
@@ -309,8 +308,7 @@ reuse the warmed container.
 
 ## Known limits — read these before you open the app to anyone
 
-I'm listing these because a public deployment without them addressed is a
-bad idea, and I'd rather you know before you find out the hard way.
+I'm listing these because a public deployment without them addressed is a bad idea, and I'd rather you know before you find out the hard way.
 
 1. **ID-document gate uses Gemini's own flag.** The server holds the
    streamed output until `contains_id_document` arrives, so the content

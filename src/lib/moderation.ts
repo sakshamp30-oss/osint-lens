@@ -4,8 +4,7 @@ import { AppError } from './errors';
 import { env } from './env';
 
 interface ClassResult { label: string; score: number }
-type Classifier = (input: Blob) => Promise<ClassResult[] | ClassResult>;
-
+type Classifier = (input: unknown) => Promise<ClassResult[] | ClassResult>;
 let classifierPromise: Promise<Classifier> | null = null;
 
 async function getClassifier(): Promise<Classifier> {
@@ -36,7 +35,9 @@ export async function moderateImage(buffer: Buffer): Promise<ModerationResult> {
   try {
     const small = await sharp(buffer).rotate().flatten({ background: '#ffffff' }).resize(512, 512, { fit: 'inside' }).jpeg({ quality: 90 }).toBuffer();
     const classifier = await getClassifier();
-    const out = await classifier(new Blob([new Uint8Array(small)], { type: 'image/jpeg' }));
+    const tf = await import('@huggingface/transformers');
+    const image = await tf.RawImage.fromBlob(new Blob([new Uint8Array(small)], { type: 'image/jpeg' }));
+    const out = await classifier(image);
     const list = Array.isArray(out) ? out : [out];
     const nsfw = list.find((r) => r.label.toLowerCase() === 'nsfw')?.score ?? 0;
     return { checked: true, nsfwScore: nsfw, blocked: nsfw >= env.nsfwThreshold };
