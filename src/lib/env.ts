@@ -32,7 +32,7 @@ export const env = {
   },
   get geminiMediaResolution() { return process.env.GEMINI_MEDIA_RESOLUTION || ''; },
   get maxUploadBytes() { return num('MAX_UPLOAD_MB', 14) * 1024 * 1024; },
-  get nsfwModel() { return process.env.NSFW_MODEL || 'Falconsai/nsfw_image_detection'; },
+  get nsfwModel() { return process.env.NSFW_MODEL || 'onnx-community/nsfw_image_detection-ONNX'; },
   get nsfwThreshold() { return num('NSFW_THRESHOLD', 0.85); },
   get moderationFailOpen() { return process.env.MODERATION_FAIL_OPEN === 'true'; },
   
