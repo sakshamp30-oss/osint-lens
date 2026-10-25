@@ -78,11 +78,18 @@ interface GeminiEvent {
 
 const OK_FINISH = new Set(['STOP', 'FINISH_REASON_UNSPECIFIED']);
 
+const RETRYABLE_STATUSES = new Set([404, 408, 425, 429, 500, 502, 503, 504]);
+
+class RetryableUpstreamError extends Error {
+  constructor(public status: number, message: string) {
+    super(message);
+    this.name = 'RetryableUpstreamError';
+  }
+}
+
 /** Yields text deltas from streamGenerateContent (SSE). Throws AppError on any failure. */
-async function* streamGeminiOnce(
-  args: StreamArgs & { model: string },
-): AsyncGenerator<string, void, void> {
-    const generationConfig: Record<string, unknown> = {
+async function* streamGeminiOnce(args: StreamArgs & { model: string }): AsyncGenerator<string, void, void> {
+  const generationConfig: Record<string, unknown> = {
     temperature: args.temperature,
     responseMimeType: 'application/json',
     responseSchema: args.schema,
@@ -103,7 +110,6 @@ async function* streamGeminiOnce(
   try {
     res = await fetch(`${BASE}/models/${encodeURIComponent(args.model)}:streamGenerateContent?alt=sse`, {
       method: 'POST',
-      // The key travels in a header, never in the URL, so it cannot leak into access logs.
       headers: { 'content-type': 'application/json', 'x-goog-api-key': args.apiKey },
       body: JSON.stringify(body),
       signal: args.signal,
@@ -112,14 +118,15 @@ async function* streamGeminiOnce(
     if (e instanceof Error && e.name === 'AbortError') throw e;
     throw new AppError('upstream_error', 'Could not reach the Gemini API. Try again.');
   }
+
   if (!res.ok) {
-  const text = await res.text();
-  const err = mapHttpError(res.status, text);
-  if (RETRYABLE_STATUSES.has(res.status)) {
-    throw new RetryableUpstreamError(res.status, err.message);
+    const text = await res.text();
+    const err = mapHttpError(res.status, text);
+    if (RETRYABLE_STATUSES.has(res.status)) {
+      throw new RetryableUpstreamError(res.status, err.message);
+    }
+    throw err;
   }
-  throw err;
-}
   if (!res.body) throw new AppError('upstream_error', 'Gemini returned an empty response.');
 
   const handleLine = (line: string): string => {
@@ -177,17 +184,8 @@ async function* streamGeminiOnce(
   }
 }
 
-const RETRYABLE_STATUSES = new Set([404, 408, 425, 429, 500, 502, 503, 504]);
-
-class RetryableUpstreamError extends Error {
-  constructor(public status: number, message: string) {
-    super(message);
-    this.name = 'RetryableUpstreamError';
-  }
-}
-
 function getModelChain(): string[] {
-  const primary = process.env.GEMINI_MODEL ?? 'gemini-3.8-flash';
+  const primary = process.env.GEMINI_MODEL ?? 'gemini-flash-latest';
   const fallbacks = (process.env.GEMINI_MODEL_FALLBACKS ?? '')
     .split(',')
     .map((s) => s.trim())

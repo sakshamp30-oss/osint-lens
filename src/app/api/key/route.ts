@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     if (!KEY_RE.test(apiKey)) {
       throw new AppError('invalid_key', 'That does not look like a Gemini API key. It should start with "AIza" or "AQ." — get one at aistudio.google.com/apikey.');
     }
-
+    
     await validateGeminiKey(apiKey); // throws invalid_key / upstream_error
 
     const ciphertext = encryptSecret(apiKey, user.id);
